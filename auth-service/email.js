@@ -1,55 +1,58 @@
-// email.js - Handles sending emails
+// email.js - Handles sending emails via Resend HTTP API
+// Uses HTTPS (port 443) instead of SMTP - works on all platforms
 
-const nodemailer = require('nodemailer');
-require('dotenv').config();
+const sendEmail = async ({ to, subject, html }) => {
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'Notes App <onboarding@resend.dev>',
+      to,
+      subject,
+      html,
+    }),
+  });
 
-// Create reusable transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`Resend API error: ${JSON.stringify(error)}`);
   }
-});
 
-// Verify transporter connection on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ Email service error:', error);
-  } else {
-    console.log('✅ Email service ready');
-  }
-});
+  return response.json();
+};
 
 // ============================================
 // Send verification email
 // ============================================
 const sendVerificationEmail = async (email, name, token) => {
-  // In real app this would be your frontend URL
   const verificationUrl = `${process.env.FRONTEND_URL}/api/auth/verify-email?token=${token}`;
 
-  await transporter.sendMail({
-    from: `"Notes App" <${process.env.EMAIL_FROM}>`,
+  await sendEmail({
     to: email,
-    subject: 'Please verify your email',
+    subject: 'Please verify your email - Notes App',
     html: `
-      <h2>Hi ${name}! 👋</h2>
-      <p>Thanks for signing up. Please verify your email by clicking the link below:</p>
-      <a href="${verificationUrl}" style="
-        background-color: #4CAF50;
-        color: white;
-        padding: 14px 20px;
-        text-decoration: none;
-        border-radius: 4px;
-        display: inline-block;
-        margin: 20px 0;
-      ">
-        Verify Email
-      </a>
-      <p>This link expires in 24 hours.</p>
-      <p>If you didn't sign up, ignore this email.</p>
-    `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #8a5a42;">Hi ${name}! 👋</h2>
+        <p>Thanks for signing up for Notes App. Please verify your email by clicking the link below:</p>
+        <a href="${verificationUrl}" style="
+          background-color: #8a5a42;
+          color: white;
+          padding: 14px 24px;
+          text-decoration: none;
+          border-radius: 6px;
+          display: inline-block;
+          margin: 20px 0;
+          font-weight: bold;
+        ">
+          Verify Email
+        </a>
+        <p style="color: #666; font-size: 14px;">This link expires in 24 hours.</p>
+        <p style="color: #666; font-size: 14px;">If you didn't sign up, you can safely ignore this email.</p>
+      </div>
+    `,
   });
 
   console.log(`📧 Verification email sent to ${email}`);
@@ -61,27 +64,29 @@ const sendVerificationEmail = async (email, name, token) => {
 const sendPasswordResetEmail = async (email, name, token) => {
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
-  await transporter.sendMail({
-    from: `"Notes App" <${process.env.EMAIL_FROM}>`,
+  await sendEmail({
     to: email,
-    subject: 'Password Reset Request',
+    subject: 'Password Reset Request - Notes App',
     html: `
-      <h2>Hi ${name}! 👋</h2>
-      <p>We received a request to reset your password. Click the link below:</p>
-      <a href="${resetUrl}" style="
-        background-color: #008CBA;
-        color: white;
-        padding: 14px 20px;
-        text-decoration: none;
-        border-radius: 4px;
-        display: inline-block;
-        margin: 20px 0;
-      ">
-        Reset Password
-      </a>
-      <p>This link expires in 1 hour.</p>
-      <p>If you didn't request this, ignore this email.</p>
-    `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #8a5a42;">Hi ${name}! 👋</h2>
+        <p>We received a request to reset your password. Click the link below:</p>
+        <a href="${resetUrl}" style="
+          background-color: #008CBA;
+          color: white;
+          padding: 14px 24px;
+          text-decoration: none;
+          border-radius: 6px;
+          display: inline-block;
+          margin: 20px 0;
+          font-weight: bold;
+        ">
+          Reset Password
+        </a>
+        <p style="color: #666; font-size: 14px;">This link expires in 1 hour.</p>
+        <p style="color: #666; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
+      </div>
+    `,
   });
 
   console.log(`📧 Password reset email sent to ${email}`);
