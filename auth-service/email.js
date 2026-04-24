@@ -28,7 +28,7 @@ const sendEmail = async ({ to, subject, html }) => {
 // Send verification email
 // ============================================
 const sendVerificationEmail = async (email, name, token) => {
-  const verificationUrl = `${process.env.FRONTEND_URL}/api/auth/verify-email?token=${token}`;
+  const verificationUrl = `${process.env.BACKEND_URL}/api/auth/verify-email?token=${token}`;
 
   await sendEmail({
     to: email,
