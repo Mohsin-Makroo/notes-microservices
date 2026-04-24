@@ -2,11 +2,13 @@
 
 import axios from 'axios';
 
-// Base URLs for each service
-const BASE_URL = import.meta.env.VITE_API_URL || '';
-const AUTH_API = `${BASE_URL}/api/auth`;
-const USER_API = `${BASE_URL}/api/user`;
-const NOTES_API = `${BASE_URL}/api/notes`;
+const AUTH_URL = 'https://notes-microservices-production.up.railway.app';
+const USER_URL = 'https://abundant-delight-production-e677.up.railway.app';
+const NOTES_URL = 'https://notes-microservices.onrender.com';
+
+const AUTH_API  = `${AUTH_URL}/api/auth`;
+const USER_API  = `${USER_URL}/api/user`;
+const NOTES_API = `${NOTES_URL}/api/notes`;
 // Get token from localStorage
 const getToken = () => localStorage.getItem('token');
 
