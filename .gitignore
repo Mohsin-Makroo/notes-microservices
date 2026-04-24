@@ -1,0 +1,26 @@
+# Environment variables - NEVER commit these
+.env
+*.env.local
+
+# Node modules
+node_modules/
+*/node_modules/
+
+# Frontend build output
+frontend/dist/
+
+# Uploaded avatar files
+user-service/uploads/*
+!user-service/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
