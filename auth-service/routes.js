@@ -51,9 +51,13 @@ router.post('/signup', async (req, res) => {
     );
 
     if (userExists.rows.length > 0) {
-      return res.status(400).json({ 
-        error: 'User with this email already exists' 
-      });
+      if (!userExists.rows[0].is_verified) {
+        await pool.query('DELETE FROM users WHERE email = $1', [email]);
+      } else {
+        return res.status(400).json({ 
+          error: 'User with this email already exists' 
+        });
+      }
     }
 
     // Hash password
